@@ -56,11 +56,26 @@
                 margin-right: 0;
             }
     </style>
-    <script src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <!-- <script src="https://cache.amap.com/lbs/static/addToolbar.js"></script> -->
+    <script>
+        window.onload = function() {
+            map.plugin(["AMap.ToolBar"], function() {       //工具条
+                map.addControl(new AMap.ToolBar());
+            });
+            if(location.href.indexOf('&guide=1')!==-1){
+                map.setStatus({scrollWheel:false})
+            }
+
+            map.plugin(["AMap.Scale"],function(){       //比例尺
+                var scale = new AMap.Scale();
+                map.addControl(scale);
+            });
+        }
+    </script>
  
-    <div id="personList" class="input-card" style="width:21rem; height:21rem; overflow-y:auto;">
+    <div id="personList" class="input-card" style="width:23rem; height:25rem; overflow-y:auto;">
          <div id="coordinate">
-           <div class="input-item"><input id="init" name="language" type="radio" checked="checked"><span class="input-text">初始</span></div>
+           <div class="input-item"><input id="init" name="language" type="radio" checked="checked"><span class="input-text">总览</span></div>
          </div>
     </div>
 
@@ -84,17 +99,41 @@
                     //console.log(gpsPosition);
                 }
             });
-            schools.forEach(function(item, index){
+            schools.forEach(function(item, index){      //画坐标点
                 document.getElementById("coordinate").innerHTML += ('<div class="input-item"><input id="' + index
                     + '" name="language" type="radio" ><span class="input-text">' + item.person + '  ' + item.school + '</span></div>')
                 placeSearch.search(item.school, function (status, result) {
                     if (item.school == "多伦多大学"){
-                        poiPosition[index] = gpsPosition;
+                        // poiPosition[index] = gpsPosition;
+                        // districts.push({
+                        //     'name': item.school,
+                        //     "center":gpsPosition,
+                        //     'person':item.person,
+                        //     'major':item.major
+                        // })
+                        poiPosition[index] = gpsPosition
+                        //console.log("poiPosition1>>"+poiPosition[index]);
+                        //console.log(poiPosition)
+                        var sameSchoolIndex = 0;
+                        var sameSchool = 0;
+                        schools.forEach(function(item2, index2){
+                            if (item2.school == item.school){
+                                sameSchool++;
+                                if (index2 == index){
+                                    sameSchoolIndex = sameSchool;
+                                }
+                            }
+                        })
+
+                        //console.log(index + "," + sameSchoolIndex + "," + sameSchool);
+                        var rd = (sameSchoolIndex - 1) * (2 * Math.PI / sameSchool);
+                        poiPosition[index] = (gps[0] + Math.cos(rd) * 0.002) + "," + (gps[1] + Math.sin(rd) * 0.002)
+                        //console.log("poiPosition2>>"+poiPosition[index]);
                         districts.push({
                             'name': item.school,
-                            "center":gpsPosition,
+                            "center":poiPosition[index],
                             'person':item.person,
-                            'major':item.major
+                            'major':item.major,
                         })
                     } else if (status == "complete"){
                         //console.log(result);
@@ -130,8 +169,12 @@
             })
         });
 
+        AMap.plugin(["AMap.Scale"],function(){
+            var scale = new AMap.Scale();
+            mapObj.addControl(scale);   
+        });
 
-    var map = new AMap.Map('container', {
+    var map = new AMap.Map('container', {       //地图样式
         mapStyle: 'amap://styles/normal',
         zoom: 5,
         center: [107.4976, 38.1697],
@@ -139,7 +182,7 @@
         //viewMode: '3D'
     });
 
-    var layer = new Loca.PointLayer({
+    var layer = new Loca.PointLayer({           //标记点
             eventSupport: true,
             map: map
         });
@@ -191,7 +234,7 @@
             layer.setzIndex(2);
             layer.render();
 
-            document.getElementById("coordinate").innerHTML += '<div class="input-item"><input id="hide" name="language" type="radio"><span class="input-text">关闭列表</span></div>';
+            // document.getElementById("coordinate").innerHTML += '<div class="input-item"><input id="hide" name="language" type="radio"><span class="input-text">关闭列表</span></div>';
             //绑定radio点击事件
             var radios = document.querySelectorAll("#coordinate input");
             radios.forEach(function(ratio) {
@@ -201,7 +244,7 @@
         };
 
         printMapLoop();
-        function printMapLoop(){
+        function printMapLoop(){        //重绘地图
             if (notReady){
                 setTimeout(function(){printMapLoop()}, 100);
             } else{
@@ -220,7 +263,7 @@
                     map.setZoomAndCenter(8,poiPosition[this.id].split(','))
                     new AMap.InfoWindow({
                         offset: new AMap.Pixel(0, -13),
-                        content:schools[this.id].person + ' 在这里',
+                        content: schools[this.id].person + ' 在这里',
                     }).open(map,poiPosition[this.id].split(','))
                 }
             }
@@ -256,9 +299,9 @@
 
 </body>
 <footer>
-    <div style=" position:absolute; top:10px; left:40%; font-weight:bold;">
+    <div style=" position:absolute; top:10px; left:35%; font-weight:bold;">
         <p>
-            <font size="10" color='#000000'> 绍兴一中2022届4班&nbsp<script>document.write(version);</script></font>
+            <font size="10" color='#000000'> 绍兴一中2022届4班蹭饭地图&nbsp<!--script>document.write(version);</script--></font>
         </p>
         <!-- <p> 
             <font size="1" color='#D3D8E0'> 技术支持：章鱼DS</font>
