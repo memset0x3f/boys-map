@@ -11,6 +11,7 @@ var schools = [
     { 'person': '李思涵', 'school': '杭州电子科技大学', 'major': '' },
     { 'person': '刘戴乐', 'school': '香港中文大学（深圳校区）', 'major': '' },
     { 'person': '石雨阳', 'school': '浙江警察职业学院', 'major': '' },
+    { 'person': '王之鉴', 'school': '西安交通大学', 'major': '' },
     { 'person': '徐嘉浩', 'school': '武汉大学', 'major': '' },
     { 'person': '徐铭扬', 'school': '杭州电子科技大学', 'major': '' },
     { 'person': '徐行', 'school': '多伦多大学', 'major': '' },
